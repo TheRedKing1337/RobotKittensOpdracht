@@ -6,17 +6,17 @@ using System;
 
 public class ProfileRandomizer : MonoSingleton<ProfileRandomizer>
 {
-    private readonly string[] functionPrefixes = new string[]{"Intern","Junior","Senior"};
-    private readonly string[] functionTitles = new string[]{"Programmer","Manager","Artist"};
+    private readonly string[] functionPrefixes = new string[]{"Intern","Junior","Senior","Lead"};
+    private readonly string[] functionTitles = new string[]{"Programmer","Manager","Artist","Recruiter","Designer","HR"};
 
-    public IEnumerator GetRandomProfile(bool useApi, ProfileUI pUI, int index = 0, ContactPersoonScroll scroller = null)
-    {
-        if (useApi) StartCoroutine(GetRandomProfileAPI(pUI, index, scroller));
-        else StartCoroutine(GetRandomProfileLocal(pUI));
-        yield break;
-    }
-
-    private IEnumerator GetRandomProfileAPI(ProfileUI pUI, int index, ContactPersoonScroll scroller)
+    /// <summary>
+    /// Gets a random profile from the api.
+    /// </summary>
+    /// <param name="pUI">The ProfileUI to fill with the random info</param>
+    /// <param name="index">The index to save the info at</param>
+    /// <param name="scroller">A reference to the scroll script, used for saving the info</param>
+    /// <returns></returns>
+    public IEnumerator GetRandomProfileAPI(ProfileUI pUI, int index, ContactPersoonScroll scroller)
     {
         //Init default struct
         ProfileInfo pInfo = ProfileInfo.GetDefault();
@@ -24,7 +24,21 @@ public class ProfileRandomizer : MonoSingleton<ProfileRandomizer>
         //Get a random person json from the api
         UnityWebRequest request = UnityWebRequest.Get("https://randomuser.me/api/?inc=name,picture&nat=nl&noinfo");
         yield return request.SendWebRequest();
-        RandomUserJson randomUserJson = JsonUtility.FromJson<RandomUserJson>(request.downloadHandler.text);
+        if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+            Debug.Log(request.error);
+
+        RandomUserJson randomUserJson = null;
+        //Try to parse the json, can contain errors from the api if its overloaded
+        try
+        {
+            randomUserJson = JsonUtility.FromJson<RandomUserJson>(request.downloadHandler.text);
+        }
+        catch
+        {
+            //If returned bad data from api retry
+            StartCoroutine(GetRandomProfileAPI(pUI, index, scroller));
+            yield break;
+        }
 
         //Set name from api
         pInfo.name = randomUserJson.results[0].name.first + " " + randomUserJson.results[0].name.last;
@@ -32,7 +46,7 @@ public class ProfileRandomizer : MonoSingleton<ProfileRandomizer>
         //Get the image from the given url
         request = UnityWebRequestTexture.GetTexture(randomUserJson.results[0].picture.medium);
         yield return request.SendWebRequest();
-        if (request.isNetworkError || request.isHttpError)
+        if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
             Debug.Log(request.error);
         else
         {
@@ -48,11 +62,10 @@ public class ProfileRandomizer : MonoSingleton<ProfileRandomizer>
         scroller.AddToDict(index, pInfo);
         yield break;
     }
-    private IEnumerator GetRandomProfileLocal(ProfileUI pUI)
-    {
-        throw new NotImplementedException();
-    }
 
+    /// <summary>
+    /// Returns a random job function string, made up from the variables in the ProfileRandomizer script
+    /// </summary>
     private string GetRandomJobFunction()
     {
         string prefix = functionPrefixes[UnityEngine.Random.Range(0, functionPrefixes.Length)];
@@ -63,7 +76,7 @@ public class ProfileRandomizer : MonoSingleton<ProfileRandomizer>
 
 
 
-    //The json classes below
+    //The json classes below, used for parsing the JSON from the api
     [Serializable]
     public class RandomUserJson
     {

@@ -4,11 +4,8 @@ using UnityEngine;
 
 public class ContactPersoonScroll : MonoBehaviour
 {
-    [SerializeField] private Sprite placeholderSprite;
-
     [Header("Settings:")]
     [SerializeField] private bool useCaching = true; //Wether the random profiles are cached or not
-    [SerializeField] private bool useApi = true; //Wether the random profiles are obtained from local or from api source
     [SerializeField] private float uiTabSpacing = 5; //The spacing between the uiTabs
 
     [Header("References:")]
@@ -31,6 +28,8 @@ public class ContactPersoonScroll : MonoBehaviour
         //Position all the uiTabs, so you dont have to manually adjust the height
         for (int i = 0; i < uiTabs.Count; i++)
         {
+            //Fill the current tab with info
+            FillInfo(uiTabs[i].gameObject, i);
             //Gets the RectTransform, calculates new height and sets it
             RectTransform toShift = uiTabs[i].GetComponent<RectTransform>();
             float newHeight = -uiTabHeight * i + uiTabHeight / 2; //+ uiTabHeight / 2 because the first one has to be above the viewport
@@ -116,6 +115,11 @@ public class ContactPersoonScroll : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Fill the given gameObject with random info, or saved info if the given index has been saved
+    /// </summary>
+    /// <param name="uiObject">The object to fill with info</param>
+    /// <param name="index">The index of the tab</param>
     private void FillInfo(GameObject uiObject, int index)
     {
         ProfileUI pUi = uiObject.GetComponent<ProfileUI>();
@@ -127,12 +131,13 @@ public class ContactPersoonScroll : MonoBehaviour
             //If no value is found make a new entry in the dict
             if (!profiles.TryGetValue(index, out pInfo))
             {
-                StartCoroutine(ProfileRandomizer.Instance.GetRandomProfile(useApi, pUi, index, this));
+                StartCoroutine(ProfileRandomizer.Instance.GetRandomProfileAPI(pUi, index, this));
+                pInfo = ProfileInfo.GetDefault();
             }
         }
         else
         {
-            StartCoroutine(ProfileRandomizer.Instance.GetRandomProfile(useApi, pUi, index, this));
+            StartCoroutine(ProfileRandomizer.Instance.GetRandomProfileAPI(pUi, index, this));
         }
 
         pUi.SetInfo(pInfo);
