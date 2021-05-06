@@ -4,7 +4,11 @@ using UnityEngine;
 
 public class ContactPersoonScroll : MonoBehaviour
 {
+    [SerializeField] private Sprite placeholderSprite;
+
     [Header("Settings:")]
+    [SerializeField] private bool useCaching = true; //Wether the random profiles are cached or not
+    [SerializeField] private bool useApi = true; //Wether the random profiles are obtained from local or from api source
     [SerializeField] private float uiTabSpacing = 5; //The spacing between the uiTabs
 
     [Header("References:")]
@@ -16,7 +20,7 @@ public class ContactPersoonScroll : MonoBehaviour
     private float uiTabHeight; //The height of the uiTab + the spacing
     private float uiScale; //The y scale of the canvas, needed for it to work on different aspect ratios
 
-    private Dictionary<int, ProfileInfo> profiles; //The stored/visited people
+    private Dictionary<int, ProfileInfo> profiles = new Dictionary<int, ProfileInfo>(); //The stored/visited people
 
     private void Start()
     {
@@ -58,7 +62,6 @@ public class ContactPersoonScroll : MonoBehaviour
         //If the index didnt change return
         if (scrolledSteps == 0) return;
 
-        Debug.Log(scrolledSteps + " steps with a height of:" + changedHeight);
         bool scrolledDown = scrolledSteps < 0; //The scroll direction, if negative it scrolled down
 
         //for each index it scrolled, shift the uiTab. This is neccessary incase fps is so low it scrolls multiple per frame
@@ -71,6 +74,10 @@ public class ContactPersoonScroll : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Handles the shifting of ui elements, shifts either 1 up or 1 down
+    /// </summary>
+    /// <param name="scrolledDown">Wether the ui should shift an element down or up</param>
     private void ShiftUiTabs(bool scrolledDown)
     {
         if (scrolledDown)
@@ -86,13 +93,16 @@ public class ContactPersoonScroll : MonoBehaviour
             GameObject toTop = uiTabs[uiTabs.Count - 1];
             uiTabs.RemoveAt(uiTabs.Count - 1);
             uiTabs.Insert(0, toTop);
+
+            //Update the info of this object
+            FillInfo(toTop, infoIndex);
         }
         else
         {
             //Gets the RectTransform, calculates new height and sets it
             RectTransform toShift = uiTabs[0].GetComponent<RectTransform>();
             int infoIndex = -currentIndex - uiTabs.Count + 1;
-            float newHeight = uiTabHeight * infoIndex + +uiTabHeight / 2;
+            float newHeight = uiTabHeight * infoIndex + uiTabHeight / 2;
             Vector3 newPosition = new Vector3(toShift.localPosition.x, newHeight, toShift.localPosition.z);
             toShift.localPosition = newPosition;
 
@@ -100,13 +110,35 @@ public class ContactPersoonScroll : MonoBehaviour
             GameObject toBottom = uiTabs[0];
             uiTabs.RemoveAt(0);
             uiTabs.Add(toBottom);
+
+            //Update the info of this object
+            FillInfo(toBottom, infoIndex);
         }
     }
 
-    public struct ProfileInfo
+    private void FillInfo(GameObject uiObject, int index)
     {
-        public string pictureUrl;
-        public string name;
-        public string function;
+        ProfileUI pUi = uiObject.GetComponent<ProfileUI>();
+
+        ProfileInfo pInfo = ProfileInfo.GetDefault();
+        //If uses caching try to get value from the profiles dict
+        if (useCaching)
+        {           
+            //If no value is found make a new entry in the dict
+            if (!profiles.TryGetValue(index, out pInfo))
+            {
+                StartCoroutine(ProfileRandomizer.Instance.GetRandomProfile(useApi, pUi, index, this));
+            }
+        }
+        else
+        {
+            StartCoroutine(ProfileRandomizer.Instance.GetRandomProfile(useApi, pUi, index, this));
+        }
+
+        pUi.SetInfo(pInfo);
+    }
+    public void AddToDict(int index, ProfileInfo pInfo)
+    {
+        profiles.Add(index, pInfo);
     }
 }
