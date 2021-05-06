@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// Holds the data for each profile
+/// </summary>
 public struct ProfileInfo
 {
     public Sprite picture;

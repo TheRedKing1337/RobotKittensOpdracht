@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Holds references to UI objects, used for setting info
+/// </summary>
 public class ProfileUI : MonoBehaviour
 {
     [SerializeField] private Image pictureImage;
-    [SerializeField] private Text nameText;
+    [SerializeField] private Text nameText; 
     [SerializeField] private Text functionText;
 
     /// <summary>

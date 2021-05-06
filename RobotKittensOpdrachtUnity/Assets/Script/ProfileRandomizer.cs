@@ -4,6 +4,9 @@ using UnityEngine.Networking;
 using TRKGeneric;
 using System;
 
+/// <summary>
+/// A singleton to get random profiles, is a singleton so it can use coroutines
+/// </summary>
 public class ProfileRandomizer : MonoSingleton<ProfileRandomizer>
 {
     private readonly string[] functionPrefixes = new string[]{"Intern","Junior","Senior","Lead"};

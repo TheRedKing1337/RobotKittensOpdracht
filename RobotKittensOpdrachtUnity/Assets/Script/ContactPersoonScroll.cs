@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// This class handles all scrolling behaviour
+/// </summary>
 public class ContactPersoonScroll : MonoBehaviour
 {
     [Header("Settings:")]
@@ -21,7 +24,7 @@ public class ContactPersoonScroll : MonoBehaviour
 
     private void Start()
     {
-        //Get the canvas y scale
+        //Get the canvas y scale, used by scrolling to scale the scroll amount by, needed because canvas is different scales at different aspect ratios
         uiScale = 1 / gameObject.transform.root.localScale.y;
         //Gets the height from the given prefab, allows for easier prefab editing
         uiTabHeight = uiTabPrefab.GetComponent<RectTransform>().sizeDelta.y + uiTabSpacing;
@@ -52,6 +55,7 @@ public class ContactPersoonScroll : MonoBehaviour
     /// <param name="scrollHeight">The current scroll height</param>
     private void CheckBounds(float scrollHeight)
     {
+        //Calculates the difference in height between the current position and the scrolled position
         float currentHeight = currentIndex * uiTabHeight;
         float changedHeight = scrollHeight - currentHeight;
         //Gets the new scrolled index

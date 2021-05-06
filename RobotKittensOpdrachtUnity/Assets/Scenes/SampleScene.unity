@@ -688,7 +688,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 106169981}
   m_HandleRect: {fileID: 106169980}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -1066,7 +1066,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   useCaching: 1
-  useApi: 1
   uiTabSpacing: 5
   uiTabPrefab: {fileID: 4572889728892863217, guid: 6bec7c45c9cdb0a49adf57dd8d97425f, type: 3}
   content: {fileID: 1141810875}
