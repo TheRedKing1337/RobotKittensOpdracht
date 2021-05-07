@@ -11,7 +11,8 @@ public class ContactPersoonScroll : MonoBehaviour
     [Header("Settings:")]
     [SerializeField] private bool useCaching = true; //Wether the random profiles are cached or not
     [SerializeField] private float uiTabSpacing = 5; //The spacing between the uiTabs
-    [SerializeField] private float parallaxSpeed = 0.0004f; //The speed at which the background scrolls
+    [SerializeField] private float parallaxSpeed = 0.00036f; //The speed at which the background scrolls
+    [SerializeField] private float autoScrollSpeed = 250; //The speed at which the autoScroll scrolls
 
     [Header("References:")]
     [SerializeField] private GameObject uiTabPrefab; //The prefab used by the the profile list, used for getting the height of each tab
@@ -22,6 +23,8 @@ public class ContactPersoonScroll : MonoBehaviour
     private int currentIndex; //The current scrolled position
     private float uiTabHeight; //The height of the uiTab + the spacing
     private float uiScale; //The y scale of the canvas, needed for it to work on different aspect ratios
+    private float viewportHeight; //The height of the viewport, needed to know where top and bottom are
+    private bool isAutoScrolling; //Wether it is auto scrolling or not
 
     private Dictionary<int, ProfileInfo> profiles = new Dictionary<int, ProfileInfo>(); //The stored/visited people
 
@@ -31,6 +34,12 @@ public class ContactPersoonScroll : MonoBehaviour
         uiScale = 1 / gameObject.transform.root.localScale.y;
         //Gets the height from the given prefab, allows for easier prefab editing
         uiTabHeight = uiTabPrefab.GetComponent<RectTransform>().sizeDelta.y + uiTabSpacing;
+        //Gets the height of the current viewport, has to be different on mobile
+        if (Application.platform == RuntimePlatform.Android) viewportHeight = content.GetComponent<RectTransform>().sizeDelta.y;
+        else viewportHeight = content.GetComponent<RectTransform>().sizeDelta.y / 2 + uiTabHeight;
+
+        //Reset position to start off
+        content.transform.position = new Vector3(content.transform.position.x, viewportHeight - uiTabHeight, content.transform.position.z);
         //Position all the uiTabs, so you dont have to manually adjust the height
         for (int i = 0; i < uiTabs.Count; i++)
         {
@@ -38,10 +47,10 @@ public class ContactPersoonScroll : MonoBehaviour
             FillInfo(uiTabs[i].gameObject, i);
             //Gets the RectTransform, calculates new height and sets it
             RectTransform toShift = uiTabs[i].GetComponent<RectTransform>();
-            float newHeight = -uiTabHeight * i + uiTabHeight / 2; //+ uiTabHeight / 2 because the first one has to be above the viewport
+            float newHeight = -uiTabHeight * i;
             Vector3 newPosition = new Vector3(toShift.localPosition.x, newHeight, toShift.localPosition.z);
             toShift.localPosition = newPosition;
-        }
+        }        
     }
 
     /// <summary>
@@ -49,8 +58,9 @@ public class ContactPersoonScroll : MonoBehaviour
     /// </summary>
     public void OnScroll()
     {
-        float currentHeight = (content.transform.position.y - 1200) * uiScale; //-1200 because that is the starting height, want to start at 0
-        CheckBounds(currentHeight); 
+        if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject == gameObject) isAutoScrolling = false;
+        float currentHeight = (content.transform.position.y - viewportHeight) * uiScale;
+        CheckBounds(currentHeight);
         ScrollBackground(currentHeight);
     }
 
@@ -93,7 +103,7 @@ public class ContactPersoonScroll : MonoBehaviour
             //Gets the RectTransform, calculates new height and sets it
             RectTransform toShift = uiTabs[uiTabs.Count - 1].GetComponent<RectTransform>();
             int infoIndex = -currentIndex;
-            float newHeight = uiTabHeight * infoIndex + +uiTabHeight / 2;
+            float newHeight = uiTabHeight * infoIndex;
             Vector3 newPosition = new Vector3(toShift.localPosition.x, newHeight, toShift.localPosition.z);
             toShift.localPosition = newPosition;
 
@@ -110,7 +120,7 @@ public class ContactPersoonScroll : MonoBehaviour
             //Gets the RectTransform, calculates new height and sets it
             RectTransform toShift = uiTabs[0].GetComponent<RectTransform>();
             int infoIndex = -currentIndex - uiTabs.Count + 1;
-            float newHeight = uiTabHeight * infoIndex + uiTabHeight / 2;
+            float newHeight = uiTabHeight * infoIndex;
             Vector3 newPosition = new Vector3(toShift.localPosition.x, newHeight, toShift.localPosition.z);
             toShift.localPosition = newPosition;
 
@@ -136,7 +146,7 @@ public class ContactPersoonScroll : MonoBehaviour
         ProfileInfo pInfo = ProfileInfo.GetDefault();
         //If uses caching try to get value from the profiles dict
         if (useCaching)
-        {           
+        {
             //If no value is found make a new entry in the dict
             if (!profiles.TryGetValue(index, out pInfo))
             {
@@ -157,9 +167,33 @@ public class ContactPersoonScroll : MonoBehaviour
     /// <param name="height">The current scrolled height</param>
     private void ScrollBackground(float height)
     {
-        for(int i = 0; i < parallaxBackgroundObjects.Length; i++)
+        for (int i = 0; i < parallaxBackgroundObjects.Length; i++)
         {
             parallaxBackgroundObjects[i].GetComponent<Image>().material.mainTextureOffset = new Vector2(0, -height * i * parallaxSpeed);
+        }
+    }
+    /// <summary>
+    /// When called will automaticly scroll either up or down
+    /// </summary>
+    /// <param name="scrollingUp"></param>
+    public void AutoScroll(bool scrollingUp)
+    {
+        if (isAutoScrolling)
+        {
+            isAutoScrolling = false; 
+            return;
+        }
+
+        isAutoScrolling = true;
+        StartCoroutine(AutoScrollRoutine(scrollingUp));
+    }
+    private IEnumerator AutoScrollRoutine(bool scrollingUp)
+    {
+        float moveVector = scrollingUp ? autoScrollSpeed : -autoScrollSpeed;
+        while (isAutoScrolling)
+        {
+            content.transform.position = new Vector3(content.transform.position.x, content.transform.position.y + moveVector * Time.deltaTime, content.transform.position.z);
+            yield return null;
         }
     }
     public void AddToDict(int index, ProfileInfo pInfo)

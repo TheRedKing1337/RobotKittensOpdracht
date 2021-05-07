@@ -34,7 +34,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 86.03071, y: 14.6}
+  m_AnchoredPosition: {x: 157.8, y: 14.6}
   m_SizeDelta: {x: 509.1322, y: 36.7344}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4572889727726169756
@@ -113,7 +113,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 86.03071, y: 56.632732}
+  m_AnchoredPosition: {x: 157.79999, y: 56.632732}
   m_SizeDelta: {x: 509.1322, y: 36.7344}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4572889728233566658
@@ -157,7 +157,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Rik van Saane
+  m_Text: Rik van SaaneLangeNaam
 --- !u!1 &4572889728892863217
 GameObject:
   m_ObjectHideFlags: 0
@@ -286,7 +286,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -253, y: 0}
+  m_AnchoredPosition: {x: -183.6, y: 0}
   m_SizeDelta: {x: 150, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4572889729085492755
