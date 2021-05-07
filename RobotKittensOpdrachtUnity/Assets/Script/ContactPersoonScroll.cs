@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// This class handles all scrolling behaviour
@@ -10,11 +11,13 @@ public class ContactPersoonScroll : MonoBehaviour
     [Header("Settings:")]
     [SerializeField] private bool useCaching = true; //Wether the random profiles are cached or not
     [SerializeField] private float uiTabSpacing = 5; //The spacing between the uiTabs
+    [SerializeField] private float parallaxSpeed = 0.0004f; //The speed at which the background scrolls
 
     [Header("References:")]
     [SerializeField] private GameObject uiTabPrefab; //The prefab used by the the profile list, used for getting the height of each tab
     [SerializeField] private GameObject content; //The gameObject that holds the uiTabs
     [SerializeField] private List<GameObject> uiTabs = new List<GameObject>(); //A list of all the uiTabs in the content, in order of top-bottom
+    [SerializeField] private GameObject[] parallaxBackgroundObjects; //An array of the backgrounds, 0 is background, 1 is in front of that etc
 
     private int currentIndex; //The current scrolled position
     private float uiTabHeight; //The height of the uiTab + the spacing
@@ -46,7 +49,9 @@ public class ContactPersoonScroll : MonoBehaviour
     /// </summary>
     public void OnScroll()
     {
-        CheckBounds(content.transform.position.y * uiScale - 1200); //-1200 because that is the starting height, want to start at 0
+        float currentHeight = (content.transform.position.y - 1200) * uiScale; //-1200 because that is the starting height, want to start at 0
+        CheckBounds(currentHeight); 
+        ScrollBackground(currentHeight);
     }
 
     /// <summary>
@@ -145,6 +150,17 @@ public class ContactPersoonScroll : MonoBehaviour
         }
 
         pUi.SetInfo(pInfo);
+    }
+    /// <summary>
+    /// Scrolls the background objects at different speeds based on their layer
+    /// </summary>
+    /// <param name="height">The current scrolled height</param>
+    private void ScrollBackground(float height)
+    {
+        for(int i = 0; i < parallaxBackgroundObjects.Length; i++)
+        {
+            parallaxBackgroundObjects[i].GetComponent<Image>().material.mainTextureOffset = new Vector2(0, -height * i * parallaxSpeed);
+        }
     }
     public void AddToDict(int index, ProfileInfo pInfo)
     {
